@@ -1,0 +1,44 @@
+# RustDesk Server OSS（hbbs + hbbr）自托管部署
+# 来源口径：https://rustdesk.com/docs/en/self-host/rustdesk-server-oss/docker/
+#   官方推荐 Docker Compose + network_mode: "host"（最简单、最可靠）。
+# 版本：1.1.16 为 GitHub 最新 stable release（2026-11 查证，
+#   https://github.com/rustdesk/rustdesk-server/releases/latest）。
+#
+# 端口（宿主机，host 网络模式下即直接监听）：
+#   hbbs  21114/TCP  Web 控制台（仅 Pro，OSS 不监听）
+#   hbbs  21115/TCP  NAT 类型测试
+#   hbbs  21116/TCP+UDP  ID 注册 / 心跳（UDP）+ TCP 打洞 / 连接
+#   hbbs  21118/TCP  WebSocket（Web Client 用）
+#   hbbr  21117/TCP  中继
+#   hbbr  21119/TCP  WebSocket 中继（Web Client 用）
+#
+# 安全注意（官方文档明确警告）：
+#   21118/21119（WebSocket 端口）信任 X-Real-IP / X-Forwarded-For 头且不做校验，
+#   直接暴露会被伪造客户端 IP。生产环境必须：
+#     1) 用防火墙将 21118/21119 限制为仅反向代理主机可访问；
+#     2) 对外只暴露 443（Nginx WSS，见 nginx-rustdesk-webclient.conf）。
+#   不需要 Web Client 时可不开放 21118/21119。
+#
+# 密钥：首次启动后在 ./data/ 下生成 id_ed25519 / id_ed25519.pub，
+#   客户端配置中的 Key 即 id_ed25519.pub 的内容（Base64）。
+
+services:
+  hbbs:
+    container_name: hbbs
+    image: rustdesk/rustdesk-server:1.1.16
+    command: hbbs
+    volumes:
+      - ./data:/root
+    network_mode: "host"
+    depends_on:
+      - hbbr
+    restart: unless-stopped
+
+  hbbr:
+    container_name: hbbr
+    image: rustdesk/rustdesk-server:1.1.16
+    command: hbbr
+    volumes:
+      - ./data:/root
+    network_mode: "host"
+    restart: unless-stopped
