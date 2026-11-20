@@ -1,6 +1,11 @@
 # 上游源码克隆（取证用，不提交；按调研报告 §1 可随时重新克隆）
 poc/upstream/
 
+# 本地临时下载与排障产物（安装包、抓包文件等）
+.tmp-download/
+*.etl
+pkt*.txt
+
 # 系统文件
 .DS_Store
 Thumbs.db

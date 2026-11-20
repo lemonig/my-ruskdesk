@@ -30,6 +30,7 @@ cat data/id_ed25519.pub
 #    复制 nginx-rustdesk-webclient.conf 到 /etc/nginx/conf.d/rustdesk.conf，
 #    替换其中所有 <YOUR_DOMAIN> 与证书路径，然后：
 nginx -t && systemctl reload nginx
+#    已完成的生产实例配置见 nginx-rustdesk-ruskesk.greandata1.com.conf（宝塔/通用均可用）
 
 # 4) 按前置条件开放防火墙端口（21118/21119 只允许本机 Nginx 访问）
 ```
@@ -67,5 +68,6 @@ nginx -t && systemctl reload nginx
 
 - 自建服务端用开源 **hbbs/hbbr（OSS）**；**Web Console 与自托管 Web Client 是 Server Pro 专有**，本方案不用。
 - 浏览器入口用**官方公共 Web Client**（rustdesk.com/web，v1.5.3 实测可用），经 Nginx WSS 指向自建服务端。
+- **hbbs 必须加 `-r 域名:21117` 参数**（2026-11-20 实测）：浏览器收到中继地址后会按「端口+2」规则映射为 `wss://域名/ws/relay`(443)；若宣告裸 IP 则映射为 `wss://IP:21119`，该端口不对公网开放，浏览器连接永远卡在中继环节。详见 compose 注释。
 - Windows 免确认 = 永久密码 + 服务化；**Android 受系统屏幕采集弹窗限制**，重启后需现场重新授权一次。
 - 视频流始终只在 设备 ↔ hbbs/hbbr ↔ 浏览器 之间流动，业务平台不做媒体面。

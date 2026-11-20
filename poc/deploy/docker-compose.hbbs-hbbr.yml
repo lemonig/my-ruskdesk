@@ -26,7 +26,12 @@ services:
   hbbs:
     container_name: hbbs
     image: rustdesk/rustdesk-server:1.1.16
-    command: hbbs
+    # -r: 对外宣告中继地址。必须用「域名:端口」形式(2026-11-20 实测):
+    #   原生客户端 → 直连 ruskesk.greandata1.com:21117(TCP 21117,已放行)
+    #   浏览器 Web Client 收到「域名:端口」后自动映射为 wss://域名/ws/relay(443 → nginx → 21119)
+    #   若填裸 IP(IP:21117),浏览器会映射成 wss://IP:21119 —— 该端口不对公网开放,
+    #   且网页端无法使用裸 TCP,导致浏览器连接永远卡在"中继加入"这一步。
+    command: hbbs -r ruskesk.greandata1.com:21117
     volumes:
       - ./data:/root
     network_mode: "host"
